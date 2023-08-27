@@ -33,7 +33,7 @@ def test_detail_availability(client, news):
     [
         (pytest.lazy_fixture('admin_client'), HTTPStatus.NOT_FOUND),
         (pytest.lazy_fixture('author_client'), HTTPStatus.OK)
-        ]
+    ]
 )
 @pytest.mark.parametrize('name', ['news:edit', 'news:delete'])
 def test_pages_availability_for_different_users(

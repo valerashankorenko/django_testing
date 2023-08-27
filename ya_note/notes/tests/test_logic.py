@@ -19,7 +19,7 @@ class NoteTests(TestCase):
             text='Текст заметки',
             slug=cls.note_slug,
             author=cls.author,
-            )
+        )
 
         cls.reader_note_slug = slugify('Другой Slug')
         cls.reader_note = Note.objects.create(
@@ -27,7 +27,7 @@ class NoteTests(TestCase):
             text='Текст заметки',
             slug=cls.reader_note_slug,
             author=cls.reader,
-            )
+        )
 
     def test_anonymous_user_cannot_create_note(self):
         url = reverse('notes:add')

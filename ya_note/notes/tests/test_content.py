@@ -16,7 +16,7 @@ class TestContent(TestCase):
             text='Текст заметки',
             slug='note-slug',
             author=cls.author,
-            )
+        )
 
     def test_list_page_contains_single_note(self):
         self.client.force_login(self.author)
