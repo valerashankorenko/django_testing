@@ -15,6 +15,11 @@ from django.urls import reverse
     ),
 )
 def test_pages_availability_for_anonymous_user(client, name, args):
+    """
+    Главная страница доступна анонимному пользователю.
+    Страницы регистрации пользователей, входа в учётную запись
+    и выхода и неё доступны анонимным пользователям.
+    """
     url = reverse(name, args=args)
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
@@ -22,6 +27,7 @@ def test_pages_availability_for_anonymous_user(client, name, args):
 
 @pytest.mark.django_db
 def test_detail_availability(client, news):
+    """Страница отдельной новости доступна анонимному пользователю."""
     url = reverse('news:detail', args=(news.id,))
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
@@ -43,6 +49,12 @@ def test_pages_availability_for_different_users(
     name,
     comment
 ):
+    """
+    Страницы удаления и редактирования комментария
+    доступны автору комментария. Авторизованный пользователь
+    не может зайти на страницы редактирования или удаления
+    чужих комментариев (возвращается ошибка 404).
+    """
     client.force_login(comment.author)
     url = reverse(name, args=(comment.id,))
     response = parametrized_client.get(url)
@@ -51,6 +63,10 @@ def test_pages_availability_for_different_users(
 
 @pytest.mark.parametrize('name', ['news:edit', 'news:delete'])
 def test_redirect_for_anonymous_client(client, name, comment):
+    """
+    При попытке перейти на страницу редактирования или удаления комментария
+    анонимный пользователь перенаправляется на страницу авторизации.
+    """
     login_url = reverse('users:login')
     url = reverse(name, args=(comment.id,))
     expected_url = f'{login_url}?next={url}'

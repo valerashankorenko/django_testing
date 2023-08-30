@@ -1,5 +1,11 @@
 import pytest
+from datetime import timedelta
+from django.utils import timezone
+
 from news.models import News, Comment
+
+NUMBER_OF_NEWS = 11
+NUMBER_OF_COMMENTS = 2
 
 
 @pytest.fixture
@@ -39,9 +45,29 @@ def news():
 
 
 @pytest.fixture
+def news_count():
+    for index in range(NUMBER_OF_NEWS):
+        News.objects.create(
+            title=f"Заголовок новости {index}",
+            text=f"Текст новости {index}")
+
+
+@pytest.fixture
 def comment(author, news):
     comment = Comment.objects.create(
         news=news,
         text='Текст комментария',
         author=author)
     return comment
+
+
+@pytest.fixture
+def comments_count(news, comment, author):
+    for index in range(NUMBER_OF_COMMENTS):
+        comment = Comment.objects.create(
+            news=news,
+            author=author,
+            text=f'Текст {index}',
+        )
+        comment.created = timezone.now() + timedelta(days=1)
+        comment.save()

@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from http import HTTPStatus
+
 from notes.models import Note
 
 User = get_user_model()
@@ -21,6 +22,11 @@ class TestRoutes(TestCase):
         )
 
     def test_pages_availability(self):
+        """
+        Главная страница доступна анонимному пользователю.
+        Страницы регистрации пользователей, входа в учётную запись
+        и выхода из неё доступны всем пользователям.
+        """
         urls = (
             ('notes:home'),
             ('users:login'),
@@ -34,6 +40,11 @@ class TestRoutes(TestCase):
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_pages_availability_authenticated_user(self):
+        """
+        Аутентифицированному пользователю доступна страница
+        со списком заметок notes/, страница успешного добавления заметки done/,
+        страница добавления новой заметки add/.
+        """
         user = User.objects.create(username='Valera')
         self.client.force_login(user)
         urls = (
@@ -48,6 +59,11 @@ class TestRoutes(TestCase):
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_availability_for_note_detail_edit_and_delete(self):
+        """
+        Страницы отдельной заметки, удаления и редактирования заметки
+        доступны только автору заметки. Если на эти страницы попытается
+        зайти другой пользователь — вернётся ошибка 404.
+        """
         users_statuses = (
             (self.author, HTTPStatus.OK),
             (self.reader, HTTPStatus.NOT_FOUND),
@@ -61,6 +77,12 @@ class TestRoutes(TestCase):
                     self.assertEqual(response.status_code, status)
 
     def test_redirect_for_anonymous_client(self):
+        """
+        При попытке перейти на страницу списка заметок, страницу успешного
+        добавления записи, страницу добавления заметки, отдельной заметки,
+        редактирования или удаления заметки анонимный пользователь
+        перенаправляется на страницу логина.
+        """
         login_url = reverse('users:login')
         urls = (
             ('notes:detail', (self.note.slug,)),
