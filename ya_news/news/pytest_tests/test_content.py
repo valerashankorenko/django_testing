@@ -15,7 +15,7 @@ def test_news_count(client, news_count):
     """Количество новостей на главной странице — не более 10."""
     response = client.get(reverse('news:home'))
     object_list = response.context.get('object_list')
-    news_count = len(object_list) if object_list else 0
+    news_count = len(object_list) if object_list is not None else 0
     assert news_count <= settings.NEWS_COUNT_ON_HOME_PAGE
 
 
@@ -25,6 +25,7 @@ def test_news_order(client):
     Свежие новости в начале списка."""
     response = client.get(reverse('news:home'))
     object_list = response.context.get('object_list')
+    assert object_list is not None
     all_dates = [news.datetime for news in object_list]
     sorted_dates = sorted(all_dates, reverse=True)
     assert all_dates == sorted_dates
@@ -39,9 +40,10 @@ def test_comments_order(client, news, comments_count):
     assert 'news' in response.context
     news = response.context['news']
     all_comments = news.comment_set.order_by('created')
+
     for index in range(len(all_comments) - NUMBER_OF_COMMENTS):
-        assert all_comments[index].created <= \
-            all_comments[index + NUMBER_OF_COMMENTS].created
+        assert (all_comments[index].created <= all_comments[
+            index + NUMBER_OF_COMMENTS].created)
 
 
 @pytest.mark.django_db

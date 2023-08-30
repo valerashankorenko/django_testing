@@ -1,9 +1,12 @@
 import pytest
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 from http import HTTPStatus
 
 from news.models import Comment
 from news.forms import CommentForm, BAD_WORDS, WARNING
+
+User = get_user_model()
 
 
 @pytest.mark.django_db
@@ -58,44 +61,35 @@ def test_authorized_user_can_edit_comment(author_client, comment):
     edit_url = reverse('news:edit', args=[comment.id])
     response = author_client.get(edit_url)
     assert response.status_code == HTTPStatus.OK
-
+    old_text = comment.text
     new_text = 'Измененный текст комментария'
     update_data = {'text': new_text}
     response = author_client.post(edit_url, data=update_data)
     assert response.status_code == HTTPStatus.FOUND
-
     comment.refresh_from_db()
     assert comment.text == new_text
-    assert comment.author == comment.author
-    assert comment.created == comment.created
+    assert comment.text != old_text
 
 
 @pytest.mark.django_db
 def test_authorized_user_can_delete_comment(author_client, comment):
     """Авторизованный пользователь может удалять свои комментарии."""
     delete_url = reverse('news:delete', args=[comment.id])
-
     response = author_client.get(delete_url)
     assert response.status_code == HTTPStatus.OK
-
     response = author_client.post(delete_url)
     assert response.status_code == HTTPStatus.FOUND
-
     assert not Comment.objects.filter(id=comment.id).exists()
-
-    deleted_comment = Comment.objects.filter(id=comment.id).first()
-    assert deleted_comment is None
 
 
 @pytest.mark.django_db
 def test_authorized_user_cannot_edit_comment_from_another_user(author_client_1,
                                                                comment):
-    """Авторизованный пользователь может редактировать чужие комментарии."""
+    """Авторизованный пользователь не может редактировать чужие комментарии."""
     initial_content = comment.text
     edit_url = reverse('news:edit', args=[comment.id])
     response = author_client_1.get(edit_url)
     assert response.status_code == HTTPStatus.NOT_FOUND
-
     comment.refresh_from_db()
     assert comment.text == initial_content
 
@@ -105,10 +99,8 @@ def test_authorized_user_cannot_del_comment_from_another_user(author_client_1,
                                                               comment):
     """Авторизованный пользователь не может удалять чужие комментарии."""
     initial_count = Comment.objects.count()
-
     delete_url = reverse('news:delete', args=[comment.id])
     response = author_client_1.get(delete_url)
-
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert Comment.objects.count() == initial_count
     assert Comment.objects.filter(id=comment.id).exists()

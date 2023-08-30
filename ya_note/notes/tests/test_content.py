@@ -35,11 +35,12 @@ class TestContent(TestCase):
         url = reverse('notes:list')
         response = self.client.get(url)
 
-        self.assertIn(self.note, response.context.get('object_list', []))
-        self.assertEqual(response.context['object_list'][0].title,
-                         self.note.title)
-        self.assertEqual(response.context['object_list'][0].author,
-                         self.note.author)
+        object_list = response.context.get('object_list', [])
+
+        self.assertIn(self.note, object_list)
+        self.assertEqual(object_list[0].title, self.note.title)
+        self.assertEqual(object_list[0].author, self.note.author)
+        self.assertEqual(object_list[0].slug, self.note.slug)
 
     def test_user_notes_list_contains_own_notes(self):
         """В список заметок одного пользователя не
