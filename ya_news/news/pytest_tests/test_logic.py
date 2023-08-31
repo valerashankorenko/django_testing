@@ -61,14 +61,15 @@ def test_authorized_user_can_edit_comment(author_client, comment):
     edit_url = reverse('news:edit', args=[comment.id])
     response = author_client.get(edit_url)
     assert response.status_code == HTTPStatus.OK
-    old_text = comment.text
+    old_comment = comment
     new_text = 'Измененный текст комментария'
     update_data = {'text': new_text}
     response = author_client.post(edit_url, data=update_data)
     assert response.status_code == HTTPStatus.FOUND
     comment.refresh_from_db()
     assert comment.text == new_text
-    assert comment.text != old_text
+    assert comment.author == old_comment.author
+    assert comment.created == old_comment.created
 
 
 @pytest.mark.django_db

@@ -45,33 +45,37 @@ class NoteTests(TestCase):
         self.assertEqual(Note.objects.count(), initial_note_count + 1)
 
         note = Note.objects.last()
-        self.assertEqual(note.title, 'Заголовок')
-        self.assertEqual(note.text, 'Текст заметки')
+        self.assertEqual(note.title, data['title'])
+        self.assertEqual(note.text, data['text'])
         self.assertEqual(note.author, self.author)
 
     def test_duplicate_slug(self):
         """Невозможно создать две заметки с одинаковым slug."""
         self.client.force_login(self.author)
+        initial_note_count = Note.objects.count()
         url = reverse('notes:add')
         data = {'title': 'Заголовок 2',
                 'text': 'Текст заметки 2',
                 'slug': 'note_slug'}
+
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertEqual(Note.objects.count(), 1)
+        final_note_count = Note.objects.count()
+        self.assertEqual(final_note_count, initial_note_count)
 
     def test_create_note_without_a_slug(self):
         """Если при создании заметки не заполнен slug, то он формируется
         автоматически, с помощью функции pytils.translit.slugify."""
+        self.client.force_login(self.author)
         data = {
-            'title': 'Заголовок',
+            'title': 'Заголовок 3',
             'text': 'Текст заметки'
         }
         response = self.client.post(reverse('notes:add'), data=data)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         created_note = Note.objects.get(title=data['title'])
         expected_slug = translit_slugify(data['title'])
-        self.assertNotEqual(created_note.slug, expected_slug)
+        self.assertEqual(created_note.slug, expected_slug)
 
     def test_logged_in_user_can_edit_note(self):
         """Залогиненный пользователь может редактировать свою заметку."""
@@ -93,16 +97,17 @@ class NoteTests(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, HTTPStatus.OK)
         updated_note = Note.objects.get(id=self.note.id)
-        self.assertEqual(updated_note.text, 'Текст заметки')
+        self.assertEqual(updated_note.text, self.note.text)
         self.assertEqual(updated_note.title, self.note.title)
         self.assertEqual(updated_note.slug, self.note.slug)
 
     def test_logged_in_user_can_delete_note(self):
         """Залогиненный пользователь может удалить свою заметку."""
         self.client.force_login(self.author)
-        response = self.client.delete('notes:delete', args=(self.note.slug,))
-        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-        self.assertTrue(Note.objects.filter(id=self.note.id).exists())
+        response = self.client.delete(reverse('notes:delete',
+                                              args=(self.note.slug,)))
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        self.assertFalse(Note.objects.filter(slug=self.note.slug).exists())
 
     def test_logged_in_user_can_delete_own_note(self):
         """Залогиненный пользователь не может удалить чужую заметку."""
@@ -129,17 +134,17 @@ class NoteTests(TestCase):
         self.note.refresh_from_db()
         self.assertEqual(self.note.title, "Заголовок")
         self.assertEqual(self.note.text, "Текст заметки")
+        self.assertEqual(self.note.author, self.author)
 
     def test_test_anonymous_user_cannot_delete_note(self):
         """Анонимный  пользователь не может удалять заметку."""
         url = reverse('notes:delete', args=(self.note.slug,))
+        num_notes_before = Note.objects.count()
         response = self.client.delete(url)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         expected_redirect_url = reverse('users:login') + '?next=' + url
         self.assertRedirects(response, expected_redirect_url)
-
-        note_exists = Note.objects.filter(id=self.note.id).exists()
+        note_exists = Note.objects.filter(slug=self.note.slug).exists()
         self.assertTrue(note_exists)
-
-        num_notes = Note.objects.count()
-        self.assertEqual(num_notes, 1)
+        num_notes_after = Note.objects.count()
+        self.assertEqual(num_notes_before, num_notes_after)
