@@ -5,9 +5,6 @@
 [![Django](https://img.shields.io/badge/-Django-464646?style=flat&logo=Django&logoColor=56C0C0&color=008080)](https://www.djangoproject.com/)
 [![Pytest](https://img.shields.io/badge/-Pytest-464646?style=flat&logo=Pytest&logoColor=56C0C0&color=008080)](https://docs.pytest.org/en/stable/)
 [![Unittest](https://img.shields.io/badge/-Unittest-464646?style=flat&logo=Unittest&logoColor=56C0C0&color=008080)](https://docs.python.org/3/library/unittest.html)
-[![HTML](https://img.shields.io/badge/-HTML-464646?style=flat&logo=HTML&logoColor=56C0C0&color=008080)](https://developer.mozilla.org/ru/docs/Web/HTML)
-[![CSS](https://img.shields.io/badge/-CSS-464646?style=flat&logo=CSS&logoColor=56C0C0&color=008080)](https://developer.mozilla.org/ru/docs/Web/CSS)
-[![Bootstrap](https://img.shields.io/badge/-Bootstrap-464646?style=flat&logo=Bootstrap&logoColor=56C0C0&color=008080)](https://getbootstrap.com/)
 
 ## Краткое описание проекта:
 В этом проекте написаны тесты для двух приложений ya_news(pytest) и ya_note(unittest)  
@@ -19,7 +16,7 @@ ya_news - сервис для просмотра новостей
 
 ## Запустить проекты:
 - Склонируйте репозиторий на свой компьютер:
-```git clone git@github.com:SerVik888/django_testing.git```
+```git clone git@github.com:valerashankorenko/django_testing.git```
 - Если у вас windows\
     `python -m venv venv` -> создать виртуальное окружение\
     `source venv/Scripts/activate` -> активировать виртуальное окружение\
